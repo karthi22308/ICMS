@@ -14,6 +14,7 @@ from sklearn.naive_bayes import GaussianNB
 import matplotlib.pyplot as plt
 import seaborn as sns
 import mplcursors
+
 st.set_option('deprecation.showPyplotGlobalUse', False)
 modeln=''
 def drawgraph(uploaded_file,model):
