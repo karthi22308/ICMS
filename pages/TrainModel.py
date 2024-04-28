@@ -13,6 +13,7 @@ from sklearn.naive_bayes import GaussianNB
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import mplcursors
 st.set_option('deprecation.showPyplotGlobalUse', False)
 modeln=''
 def drawgraph(uploaded_file,model):
@@ -20,10 +21,34 @@ def drawgraph(uploaded_file,model):
     #if modeln=='RandomForest':
     st.write("Feature Importances:")
     data = pd.read_excel(uploaded_file)
-    plot_feature_importances(model, data.iloc[:, :-1])
+    st.write("Bar Chart:")
+    plot_feature_importances_bar(model, data.iloc[:, :-1])
+    st.write("Pie Chart:")
+    plot_feature_importances_pie(model, data.iloc[:, :-1])
 
 
-def plot_feature_importances(model, feature_names):
+
+def plot_feature_importances_pie(model, feature_names):
+    if isinstance(feature_names, pd.DataFrame):
+        feature_names = feature_names.columns
+
+    feature_importances = model.feature_importances_
+    sorted_idx = feature_importances.argsort()
+
+    # Plotting a pie chart instead of a horizontal bar chart
+    fig, ax = plt.subplots(figsize=(8, 8))
+    wedges, texts, autotexts = ax.pie(feature_importances[sorted_idx], labels=[feature_names[i] for i in sorted_idx],
+                                      autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    ax.set_title('Feature Importances')
+
+    # Enable cursor support for the pie chart
+    mplcursors.cursor(hover=True).connect("add", lambda sel: sel.annotation.set_text(
+        f"{sel.artist.get_labels()[sel.target.index]}: {sel.artist.get_autopct()(feature_importances[sorted_idx][sel.target.index], feature_importances[sorted_idx])}"))
+
+    st.pyplot(fig)
+
+def plot_feature_importances_bar(model, feature_names):
     if isinstance(feature_names, pd.DataFrame):
         feature_names = feature_names.columns
 
