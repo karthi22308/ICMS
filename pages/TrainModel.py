@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
 import matplotlib.pyplot as plt
+import plotly.express as px
 import seaborn as sns
 import mplcursors
 
@@ -22,10 +23,11 @@ def drawgraph(uploaded_file,model):
     #if modeln=='RandomForest':
     st.write("Feature Importances:")
     data = pd.read_excel(uploaded_file)
-    st.write("Bar Chart:")
-    plot_feature_importances_bar(model, data.iloc[:, :-1])
     st.write("Pie Chart:")
     plot_feature_importances_pie(model, data.iloc[:, :-1])
+    st.write("Bar Chart:")
+    plot_feature_importances_bar(model, data.iloc[:, :-1])
+
 
 
 
@@ -36,18 +38,18 @@ def plot_feature_importances_pie(model, feature_names):
     feature_importances = model.feature_importances_
     sorted_idx = feature_importances.argsort()
 
-    # Plotting a pie chart instead of a horizontal bar chart
-    fig, ax = plt.subplots(figsize=(8, 8))
-    wedges, texts, autotexts = ax.pie(feature_importances[sorted_idx], labels=[feature_names[i] for i in sorted_idx],
-                                      autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax.set_title('Feature Importances')
+    # Create a DataFrame for Plotly Express
+    data = {
+        "Feature": [feature_names[i] for i in sorted_idx],
+        "Importance": feature_importances[sorted_idx]
+    }
+    df = pd.DataFrame(data)
 
-    # Enable cursor support for the pie chart
-    mplcursors.cursor(hover=True).connect("add", lambda sel: sel.annotation.set_text(
-        f"{sel.artist.get_labels()[sel.target.index]}: {sel.artist.get_autopct()(feature_importances[sorted_idx][sel.target.index], feature_importances[sorted_idx])}"))
+    # Create a pie chart using Plotly Express
+    fig = px.pie(df, values='Importance', names='Feature', title='Feature Importances')
 
-    st.pyplot(fig)
+    # Display the plot
+    st.plotly_chart(fig)
 
 def plot_feature_importances_bar(model, feature_names):
     if isinstance(feature_names, pd.DataFrame):
