@@ -9,7 +9,7 @@ import openai
 import joblib
 import os
 #endregion
-#region azure implementation
+folder_path= r'C:\Users\1000070232\PycharmProjects\Hackathon\output'
 def generate_response(input_text):
 
     openai.api_type = "azure"
@@ -214,12 +214,40 @@ else:
            rejected_customers_df['text'] += ("Mortgage: " + rejected_customers_df['Mortgage'].astype(str) + "\n")
 
            # Pass text to generate_response method
-           rejected_customers_df['bot_response'] = rejected_customers_df['text'].apply(generate_response)
+           rejected_customers_df['Gen_AI_Response'] = rejected_customers_df['text'].apply(generate_response)
 
            # Save rejected customers details to fourth Excel file without 'text' column
            rejected_customers_df.drop(columns=['text']).to_excel(os.path.join(output_dir, 'rejected_customers.xlsx'),
                                                                  index=False)
-           st.info("done", icon="ℹ️")
+           st.info("Completed", icon="ℹ️")
+           st.write("Customer Id's prdicted from ML models trained")
+           data1 = pd.read_excel(folder_path+r"\credit_card_accepted.xlsx", usecols=[0])
+
+           # Read the first column from the second Excel file
+           data2 = pd.read_excel(folder_path+r"\personal_loan_accepted.xlsx", usecols=[0])
+
+           # Read the first column from the third Excel file
+           data3 = pd.read_excel(folder_path+r"\term_deposit_accepted.xlsx", usecols=[0])
+
+           # Concatenate the first columns into a single DataFrame and give names to each column
+           combined_data = pd.concat([data1, data2, data3], axis=1)
+           combined_data.columns = ["Credit card", "Personal loan", "Term Deposit"]  # Specify column names here
+
+           st.dataframe(combined_data)
+           file_path = folder_path + r"\rejected_customers.xlsx"
+
+           data = pd.read_excel(file_path)
+           # Select the first and last column
+           first_column = data.iloc[:, 0]
+           last_column = data.iloc[:, -1]
+
+           # Concatenate the selected columns into a new DataFrame
+           selected_data = pd.concat([first_column, last_column], axis=1)
+           # Display the contents of the Excel file
+           st.write("customers cant suggested for personal loan/credit card/Termdeposit")
+           st.dataframe(selected_data)
+
+
 
 
 #endregion
