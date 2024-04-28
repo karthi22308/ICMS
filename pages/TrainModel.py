@@ -10,26 +10,32 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import accuracy_score, mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
-
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import plotly.express as px
 import seaborn as sns
 import mplcursors
+import numpy as np
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
 modeln=''
 def drawgraph(uploaded_file,model):
-    st.write(modeln)
-    #if modeln=='RandomForest':
+    #region preparing data
+    data = pd.read_excel(uploaded_file, sheet_name=0)
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    #endregion
     st.write("Feature Importances:")
     data = pd.read_excel(uploaded_file)
     st.write("Pie Chart:")
     plot_feature_importances_pie(model, data.iloc[:, :-1])
     st.write("Bar Chart:")
     plot_feature_importances_bar(model, data.iloc[:, :-1])
-
-
-
 
 def plot_feature_importances_pie(model, feature_names):
     if isinstance(feature_names, pd.DataFrame):
@@ -64,6 +70,7 @@ def plot_feature_importances_bar(model, feature_names):
     plt.xlabel('Feature Importance')
     plt.title('Feature Importances')
     st.pyplot()
+
 def getmodel(uploaded_file):
     maxaccuracy = 0
     data = pd.read_excel(uploaded_file, sheet_name=0)
@@ -91,21 +98,22 @@ def getmodel(uploaded_file):
         rmodel = model
         maxaccuracy = accuracy
         modelname = 'Gaussian Naive Bayes'
-        modeln = modelname
+    # Read data from the uploaded file
     data = pd.read_excel(uploaded_file, sheet_name=0)
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    #accuracy = accuracy_score(y_test, y_pred)
-    error =mean_squared_error(y_test, y_pred)
-    if (accuracy > maxaccuracy):
-        rmodel = model
+    knn = KNeighborsClassifier(n_neighbors=5)
+    knn.fit(X_train, y_train)
+    # Make predictions
+    y_pred = knn.predict(X_test)
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    if accuracy > maxaccuracy:
+        rmodel = knn
         maxaccuracy = accuracy
-        modelname = 'Linear Regression'
-        modeln = modelname
+        modelname = 'k-Nearest Neighbors'
+
     st.info('model trained with Accuracy: ' + str(maxaccuracy*100)+'% using '+modelname+' Algorithm')
     return  rmodel
 
