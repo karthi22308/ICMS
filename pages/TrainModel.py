@@ -132,7 +132,6 @@ if mde == "Personal loan":
         model=getmodel(uploaded_file)
         joblib.dump(model, 'personalloan.pkl')
         #file_path = "your_dataset.xlsx"
-        st.info(modeln)
         drawgraph(uploaded_file,model)
 
 

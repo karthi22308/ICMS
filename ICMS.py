@@ -220,18 +220,24 @@ else:
            rejected_customers_df.drop(columns=['text']).to_excel(os.path.join(output_dir, 'rejected_customers.xlsx'),
                                                                  index=False)
            st.info("Completed", icon="ℹ️")
-           st.write("Customer Id's prdicted from ML models trained")
-           data1 = pd.read_excel(folder_path+r"\credit_card_accepted.xlsx", usecols=[0])
+           st.info("Excel files have ", icon="ℹ️")
+           st.write("Predictions from trained Model:")
+           data1 = pd.read_excel(folder_path + r"\credit_card_accepted.xlsx", usecols=[0, 1])
 
-           # Read the first column from the second Excel file
-           data2 = pd.read_excel(folder_path+r"\personal_loan_accepted.xlsx", usecols=[0])
+           # Read the first two columns from the second Excel file
+           data2 = pd.read_excel(folder_path + r"\personal_loan_accepted.xlsx", usecols=[0, 1])
 
-           # Read the first column from the third Excel file
-           data3 = pd.read_excel(folder_path+r"\term_deposit_accepted.xlsx", usecols=[0])
+           # Read the first two columns from the third Excel file
+           data3 = pd.read_excel(folder_path + r"\term_deposit_accepted.xlsx", usecols=[0, 1])
 
-           # Concatenate the first columns into a single DataFrame and give names to each column
-           combined_data = pd.concat([data1, data2, data3], axis=1)
-           combined_data.columns = ["Credit card", "Personal loan", "Term Deposit"]  # Specify column names here
+           # Concatenate the first two columns into a single DataFrame and give names to each column
+           combined_data = pd.concat(
+               [data1.iloc[:, 0], data1.iloc[:, 1], data2.iloc[:, 0], data2.iloc[:, 1], data3.iloc[:, 0],
+                data3.iloc[:, 1]], axis=1)
+           combined_data.columns = ["Credit card - customerid", "Credit card - mobile number", "Personal loan - customerid", "Personal loan - mobile number",
+                                    "Term Deposit - customerid", "Term Deposit - mobile number"]  # Specify column names here
+           combined_data.columns = combined_data.columns.str.replace(',', '')
+           combined_data = combined_data.applymap(lambda x: str(x).replace(',', '') if isinstance(x, str) else x)
 
            st.dataframe(combined_data)
            file_path = folder_path + r"\rejected_customers.xlsx"
