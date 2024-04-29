@@ -1,10 +1,6 @@
 #region headers
 import pandas as pd
 import streamlit as st
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-import joblib
 import openai
 import joblib
 import os
@@ -36,7 +32,9 @@ st.title("Intelligent Client Management System")
 mde = st.radio(
     "Select Mode of application",
     ('Form', 'Export'))
+
 #region Form mode
+# developed and tested by Nikhil shravan khobragade
 if mde == "Form":
     #region inputs
     st.title("Please fill details of the customer")
@@ -123,6 +121,7 @@ if mde == "Form":
 
 
 #region bulk mode
+# developed and tested by Karthick C
 else:
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:

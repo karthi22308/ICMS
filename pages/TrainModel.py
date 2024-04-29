@@ -1,26 +1,18 @@
-import ipaddress
-import os
-
 import joblib
-import openai
 import streamlit as st
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import accuracy_score, mean_squared_error
-from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import plotly.express as px
-import seaborn as sns
-import mplcursors
-import numpy as np
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
 modeln=''
+#region plotting graph based on trained model
+# developed and tested by Nikhil shravan khobragade
 def drawgraph(uploaded_file,model):
     #region preparing data
     data = pd.read_excel(uploaded_file, sheet_name=0)
@@ -70,7 +62,10 @@ def plot_feature_importances_bar(model, feature_names):
     plt.xlabel('Feature Importance')
     plt.title('Feature Importances')
     st.pyplot()
+#endregion
 
+#region method to choose most efficient algorithm (GNB,Randomforest,kNN)
+# developed and tested by Karthick C
 def getmodel(uploaded_file):
     maxaccuracy = 0
     data = pd.read_excel(uploaded_file, sheet_name=0)
@@ -116,10 +111,11 @@ def getmodel(uploaded_file):
 
     st.info('model trained with Accuracy: ' + str(maxaccuracy*100)+'% using '+modelname+' Algorithm')
     return  rmodel
+#endregion
 
 
-
-
+#region for  UI to get input file train model
+# developed and tested by pavan and kavya
 st.title("ML Model trainer for data driven recommendation engine")
 mde = st.radio(
     "Select service that needs a model to be trained",
@@ -160,6 +156,7 @@ if mde == "Term Deposit":
         joblib.dump(model, 'Termdeposit.pkl')
        # file_path = "your_dataset.xlsx"
         drawgraph(uploaded_file, model)
+#endregion
 
 
 
