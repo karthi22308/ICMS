@@ -101,20 +101,26 @@ if mde == "Form":
     predictionc = modelc.predict(input_datacc)[0]
     predictiont = modelt.predict(input_datacc)[0]
 
-    output=' '
+    output='Services that can be suggested are:'
+    var = 1
     #endregion
     #region prediction
     if st.button('Predict'):
-        if pl == 0 and predictionp==1: output+='personal loan can be suggested '
-        if cc == 0 and  predictionc==1 :output+='credit card can be suggested'
-        if predictiont == 1: output += ' Term Deposit can be suggested'+str(predictionc)
+        if pl == 0 and predictionp==1:
+            output+='\n'+str(var)+'. Personal loan can be suggested '
+            var+=1
+        if cc == 0 and  predictionc==1 :
+            output+='\n'+str(var)+'. Credit card can be suggested'
+            var+=1
+        if predictiont == 1:
+            output += '\n' + str(var) + '. Term Deposit can be suggested'
 
-        if output==' ':
+        if output=='Services that can be suggested are:':
             st.info("unable to predict services with certainity", icon="ℹ️")
         else:
             st.info(output, icon="ℹ️")
         bot_response = generate_response(text)
-        st.write("services that could be offered:", bot_response)
+        st.write("Services that could be offered:", bot_response)
 
     #endregion
 #endregion
@@ -219,7 +225,7 @@ else:
            rejected_customers_df.drop(columns=['text']).to_excel(os.path.join(output_dir, 'rejected_customers.xlsx'),
                                                                  index=False)
            st.info("Completed", icon="ℹ️")
-           st.info("Excel files have ", icon="ℹ️")
+           st.info("Excel files have created in output folder separately ", icon="ℹ️")
            st.write("Predictions from trained Model:")
            data1 = pd.read_excel(folder_path + r"\credit_card_accepted.xlsx", usecols=[0, 1])
 
