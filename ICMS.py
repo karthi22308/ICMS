@@ -1,4 +1,6 @@
 #region headers
+import time
+
 import pandas as pd
 import streamlit as st
 import openai
@@ -26,6 +28,14 @@ def generate_response(input_text):
     return response['choices'][0]['text']
 
 #endregion
+
+def find_total_customers(uploaded_file):
+    if uploaded_file is not None:
+        # Read the uploaded Excel file into a pandas DataFrame
+        df = pd.read_excel(uploaded_file)
+        # Get the number of rows in the DataFrame, which corresponds to the number of customers
+        total_customers = len(df)
+        return total_customers
 
 #region Page Design
 st.title("Intelligent Client Management System")
@@ -132,8 +142,15 @@ else:
     uploaded_file = st.file_uploader("Choose a file")
     if uploaded_file is not None:
         if st.button('Predict'):
+          with st.spinner("ICMS Running..."):
+           total_customers = find_total_customers(uploaded_file)
+           timet = int(total_customers*1.8)
+           st.info(f"Please note that this Application Uses OpenAI its response time can vary  depending on various factors, including the current load on OpenAI's servers, network latency, and the specific capabilities of the API expected time for the uploaded file is {timet} seconds..")
+
+
            # new_data = pd.read_csv(uploaded_file)
            new_data = pd.read_excel(uploaded_file)
+
 
            # Extract customerid and phone number columns
            customer_info = new_data[['CustomerId', 'Mobile number']]
@@ -201,7 +218,7 @@ else:
            rejected_customers_df = new_data[new_data['CustomerId'].isin(rejected_customer_ids)]
 
            rejected_customers_df = new_data[new_data['CustomerId'].isin(rejected_customer_ids)]
-
+#region open ai region for rejected cust
            # Generate text for each rejected customer
            rejected_customers_df[
                'text'] = "I will give you some details about a person, please give some banking service suggestions we can provide him(our Ml model predicted that we cant provide credit card, personal loan or term deposit suggestion to the customer so exclude that):\n"
@@ -220,42 +237,193 @@ else:
 
            # Pass text to generate_response method
            rejected_customers_df['Gen_AI_Response'] = rejected_customers_df['text'].apply(generate_response)
+#endregion
 
            # Save rejected customers details to fourth Excel file without 'text' column
            rejected_customers_df.drop(columns=['text']).to_excel(os.path.join(output_dir, 'rejected_customers.xlsx'),
                                                                  index=False)
+           # region open ai region for personal loan
+           # Read personal_loan_accepted.xlsx to get CustomerId values
+
+           personal_loan_df = pd.read_excel('output/personal_loan_accepted.xlsx')
+           customer_ids = personal_loan_df['CustomerId']
+
+           # Read upload_file.xlsx to get customer details
+           upload_file_df = pd.read_excel(uploaded_file)
+
+           # Iterate through CustomerId values
+           for customer_id in customer_ids:
+               # Find the row corresponding to the CustomerId
+               customer_row = upload_file_df[upload_file_df['CustomerId'] == customer_id]
+
+               if not customer_row.empty:
+                   # Construct the sentence using customer details
+                   sentence = f"I will give you some details about a person, we have generated a Ml model from historic data of those got personal loan this model predicted tht this person might opt for personal loan so give me information about the person and suggest some more services that a bank can offer and help to understand about the customer\n"
+                   sentence += f"Age: {customer_row['Age'].iloc[0]}\n"
+                   sentence += f"Years related with bank: {customer_row['Experience'].iloc[0]}\n"
+                   sentence += f"income of person in thousands {customer_row['Income in Thousaunds'].iloc[0]}\n"
+
+                   sentence += f"total family members {customer_row['Family'].iloc[0]}\n"
+                   sentence += f"average monthly expenditure in thousands {customer_row['CCAvg in thousands'].iloc[0]}\n"
+                   sentence += f"education level 1 for higher secondary 2 for graduation 3 for post graduation : {customer_row['Education'].iloc[0]}\n"
+                   sentence += f"mortage amount : {customer_row['Mortgage'].iloc[0]}\n"
+                   sentence += f"has security account 1/0: {customer_row['SecuritiesAccount'].iloc[0]}\n"
+                   sentence += f"has CDAccount 1/0: {customer_row['CDAccount'].iloc[0]}\n"
+                   sentence += f"has Online(opted Netbanking) 1/0: {customer_row['Online(opted Netbanking)'].iloc[0]}\n"
+                   sentence += f"has CreditCard 1/0: {customer_row['CreditCard'].iloc[0]}\n"
+                   # Pass the sentence to generate_response method
+                   response = generate_response(sentence)
+
+                   # Append the generated response to personal_loan_accepted.xlsx
+                   personal_loan_df.loc[personal_loan_df['CustomerId'] == customer_id, 'Gen_AI_Response'] = response
+
+           # Save the updated personal_loan_accepted.xlsx file
+           personal_loan_df.to_excel('output/personal_loan_accepted.xlsx', index=False)
+           # endregion
+           # region open ai region for credit card customers
+           # Read personal_loan_accepted.xlsx to get CustomerId values
+
+           personal_loan_df = pd.read_excel('output/credit_card_accepted.xlsx')
+           customer_ids = personal_loan_df['CustomerId']
+
+           # Read upload_file.xlsx to get customer details
+           upload_file_df = pd.read_excel(uploaded_file)
+
+           # Iterate through CustomerId values
+           for customer_id in customer_ids:
+               # Find the row corresponding to the CustomerId
+               customer_row = upload_file_df[upload_file_df['CustomerId'] == customer_id]
+
+               if not customer_row.empty:
+                   # Construct the sentence using customer details
+                   sentence = f"I will give you some details about a person, we have generated a Ml model from historic data of those got credit card this model predicted tht this person might opt for credit card so give me information about the person and suggest some more services that a bank can offer and help to understand about the customer\n"
+                   sentence += f"Age: {customer_row['Age'].iloc[0]}\n"
+                   sentence += f"Years related with bank: {customer_row['Experience'].iloc[0]}\n"
+                   sentence += f"income of person in thousands {customer_row['Income in Thousaunds'].iloc[0]}\n"
+
+                   sentence += f"total family members {customer_row['Family'].iloc[0]}\n"
+                   sentence += f"average monthly expenditure in thousands {customer_row['CCAvg in thousands'].iloc[0]}\n"
+                   sentence += f"education level 1 for higher secondary 2 for graduation 3 for post graduation : {customer_row['Education'].iloc[0]}\n"
+                   sentence += f"mortage amount : {customer_row['Mortgage'].iloc[0]}\n"
+                   sentence += f"has security account 1/0: {customer_row['SecuritiesAccount'].iloc[0]}\n"
+                   sentence += f"has CDAccount 1/0: {customer_row['CDAccount'].iloc[0]}\n"
+                   sentence += f"has Online(opted Netbanking) 1/0: {customer_row['Online(opted Netbanking)'].iloc[0]}\n"
+                   sentence += f"has CreditCard 1/0: {customer_row['CreditCard'].iloc[0]}\n"
+                   # Pass the sentence to generate_response method
+                   response = generate_response(sentence)
+
+                   # Append the generated response to personal_loan_accepted.xlsx
+                   personal_loan_df.loc[personal_loan_df['CustomerId'] == customer_id, 'Gen_AI_Response'] = response
+
+           # Save the updated personal_loan_accepted.xlsx file
+           personal_loan_df.to_excel('output/credit_card_accepted.xlsx', index=False)
+           # endregion
+
+           # # region open ai region for term deposit customers
+           # # Read personal_loan_accepted.xlsx to get CustomerId values
+           #
+           # personal_loan_df = pd.read_excel('output/term_deposit_accepted.xlsx')
+           # customer_ids = personal_loan_df['CustomerId']
+           #
+           # # Read upload_file.xlsx to get customer details
+           # upload_file_df = pd.read_excel(uploaded_file)
+           #
+           # # Iterate through CustomerId values
+           # for customer_id in customer_ids:
+           #     # Find the row corresponding to the CustomerId
+           #     customer_row = upload_file_df[upload_file_df['CustomerId'] == customer_id]
+           #
+           #     if not customer_row.empty:
+           #         # Construct the sentence using customer details
+           #         sentence = f"I will give you some details about a person, we have generated a Ml model from historic data of those got term deposit this model predicted tht this person might opt for term deposit so give me information about the person and suggest some more services that a bank can offer and help to understand about the customer\n"
+           #         sentence += f"Age: {customer_row['Age'].iloc[0]}\n"
+           #         sentence += f"Years related with bank: {customer_row['Experience'].iloc[0]}\n"
+           #         sentence += f"income of person in thousands {customer_row['Income in Thousaunds'].iloc[0]}\n"
+           #
+           #         sentence += f"total family members {customer_row['Family'].iloc[0]}\n"
+           #         sentence += f"average monthly expenditure in thousands {customer_row['CCAvg in thousands'].iloc[0]}\n"
+           #         sentence += f"education level 1 for higher secondary 2 for graduation 3 for post graduation : {customer_row['Education'].iloc[0]}\n"
+           #         sentence += f"mortage amount : {customer_row['Mortgage'].iloc[0]}\n"
+           #         sentence += f"has security account 1/0: {customer_row['SecuritiesAccount'].iloc[0]}\n"
+           #         sentence += f"has CDAccount 1/0: {customer_row['CDAccount'].iloc[0]}\n"
+           #         sentence += f"has Online(opted Netbanking) 1/0: {customer_row['Online(opted Netbanking)'].iloc[0]}\n"
+           #         sentence += f"has CreditCard 1/0: {customer_row['CreditCard'].iloc[0]}\n"
+           #         # Pass the sentence to generate_response method
+           #         response = generate_response(sentence)
+           #
+           #         # Append the generated response to personal_loan_accepted.xlsx
+           #         personal_loan_df.loc[personal_loan_df['CustomerId'] == customer_id, 'Gen_AI_Response'] = response
+           #
+           # # Save the updated personal_loan_accepted.xlsx file
+           # personal_loan_df.to_excel('output/term_deposit_accepted.xlsx', index=False)
+           # # endregion
+
+
            st.info("Completed", icon="ℹ️")
            st.info("Excel files have created in output folder separately ", icon="ℹ️")
-           st.write("Predictions from trained Model:")
-           data1 = pd.read_excel(folder_path + r"\credit_card_accepted.xlsx", usecols=[0, 1])
+           # st.write("Predictions from trained Model:")
+           # data1 = pd.read_excel(folder_path + r"\credit_card_accepted.xlsx", usecols=[0, 1])
+           #
+           # # Read the first two columns from the second Excel file
+           # data2 = pd.read_excel(folder_path + r"\personal_loan_accepted.xlsx", usecols=[0, 1])
+           #
+           # # Read the first two columns from the third Excel file
+           # data3 = pd.read_excel(folder_path + r"\term_deposit_accepted.xlsx", usecols=[0, 1])
+           #
+           # # Concatenate the first two columns into a single DataFrame and give names to each column
+           # combined_data = pd.concat(
+           #     [data1.iloc[:, 0], data1.iloc[:, 1], data2.iloc[:, 0], data2.iloc[:, 1], data3.iloc[:, 0],
+           #      data3.iloc[:, 1]], axis=1)
+           # combined_data.columns = ["Credit card - customerid", "Credit card - mobile number", "Personal loan - customerid", "Personal loan - mobile number",
+           #                          "Term Deposit - customerid", "Term Deposit - mobile number"]  # Specify column names here
+           # combined_data.columns = combined_data.columns.str.replace(',', '')
+           # combined_data = combined_data.applymap(lambda x: str(x).replace(',', '') if isinstance(x, str) else x)
+           #
+           # st.dataframe(combined_data)
+           st.info("customers  suggested for personal loan")
+           file_path = folder_path + r"\personal_loan_accepted.xlsx"
+           data = pd.read_excel(file_path)
+           first_column = data.iloc[:, 0]
+           last_column = data.iloc[:, -1]
+           secon_column = data.iloc[:, 1]
 
-           # Read the first two columns from the second Excel file
-           data2 = pd.read_excel(folder_path + r"\personal_loan_accepted.xlsx", usecols=[0, 1])
+           # Concatenate the selected columns into a new DataFrame
+           selected_data = pd.concat([first_column, secon_column, last_column], axis=1)
+           st.dataframe(selected_data)
 
-           # Read the first two columns from the third Excel file
-           data3 = pd.read_excel(folder_path + r"\term_deposit_accepted.xlsx", usecols=[0, 1])
+           st.info("customers  suggested for Credit card")
+           file_path = folder_path + r"\credit_card_accepted.xlsx"
+           data = pd.read_excel(file_path)
+           first_column = data.iloc[:, 0]
+           last_column = data.iloc[:, -1]
+           secon_column = data.iloc[:, 1]
 
-           # Concatenate the first two columns into a single DataFrame and give names to each column
-           combined_data = pd.concat(
-               [data1.iloc[:, 0], data1.iloc[:, 1], data2.iloc[:, 0], data2.iloc[:, 1], data3.iloc[:, 0],
-                data3.iloc[:, 1]], axis=1)
-           combined_data.columns = ["Credit card - customerid", "Credit card - mobile number", "Personal loan - customerid", "Personal loan - mobile number",
-                                    "Term Deposit - customerid", "Term Deposit - mobile number"]  # Specify column names here
-           combined_data.columns = combined_data.columns.str.replace(',', '')
-           combined_data = combined_data.applymap(lambda x: str(x).replace(',', '') if isinstance(x, str) else x)
+           # Concatenate the selected columns into a new DataFrame
+           selected_data = pd.concat([first_column, secon_column, last_column], axis=1)
+           st.dataframe(selected_data)
+           st.info("customers  suggested for Term Deposit")
+           file_path = folder_path + r"\term_deposit_accepted.xlsx"
+           data = pd.read_excel(file_path)
+           first_column = data.iloc[:, 0]
+           last_column = data.iloc[:, -1]
 
-           st.dataframe(combined_data)
+           # Concatenate the selected columns into a new DataFrame
+           selected_data = pd.concat([first_column, last_column], axis=1)
+           st.dataframe(selected_data)
+
            file_path = folder_path + r"\rejected_customers.xlsx"
 
            data = pd.read_excel(file_path)
            # Select the first and last column
            first_column = data.iloc[:, 0]
+
            last_column = data.iloc[:, -1]
 
            # Concatenate the selected columns into a new DataFrame
            selected_data = pd.concat([first_column, last_column], axis=1)
            # Display the contents of the Excel file
            st.write("customers cant suggested for personal loan/credit card/Termdeposit")
+
            st.dataframe(selected_data)
 
 

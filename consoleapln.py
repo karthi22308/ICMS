@@ -112,7 +112,7 @@ text = 'i will give you some details about a person, please give some banking se
     income) + ', ZIP code-' + str(zip) + ',family members-' + str(
     family_members) + ',credit card usage in average-' + str(
     cc_avg) + ',education- ' + education + ',mortage-' + str(mortgage)
-output = ' '
+outpexut = ' '
 if personal_loan == 0 and predictionp == 1: output += 'personal loan can be suggested '
 if credit_card == 0 and predictionc == 1: output += 'credit card can be suggested'
 if predictiont == 1: output += ' Term Deposit can be suggested' + str(predictionc)
