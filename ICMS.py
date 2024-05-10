@@ -146,8 +146,14 @@ if mde == "Form":
             st.info("unable to predict services with certainity", icon="ℹ️")
         else:
             st.info(output, icon="ℹ️")
+        text = f'i will give you some details about a person, please give some banking service suggestions we can provide him age i created a Ml model with historic data to predict whether we can offer credit card, personal loan and term deposit its output is {output} so suggest accordingly dont suggest  credit card, personal loan and term deposit  unless it is suggested by ML' + str(
+            age) + ', years related with bank-' + str(experience) + ', Income in Thousaunds-' + str(
+            income) + ', ZIP code-' + str(zip) + ',family members-' + str(
+            Family) + ',credit card usage in average-' + str(
+            avgcc) + ',education- ' + education + ',mortage-' + str(mortgage)
         bot_response = generate_response(text)
-        st.write("Services that could be offered:", bot_response)
+        st.write("Services that could be offered:")
+        st.write(bot_response)
 
     # endregion
 # endregion
@@ -158,6 +164,10 @@ if mde == "Form":
 else:
 
     uploaded_file = st.file_uploader("Choose a file")
+    st.text('please Make sure that the data is in the format:')
+    st.info(
+        'CustomerId,Mobile number,Age,Experience,Income in Thousaunds,ZIP Code,total famil members,Average expenditure per month in thousands,Education level,Mortgage in thousands,has SecuritiesAccount,has CDAccount,has Online(opted Netbanking),has CreditCard')
+
     if uploaded_file is not None:
 
         if st.button('Predict'):
@@ -457,7 +467,7 @@ else:
                 # Concatenate the selected columns into a new DataFrame
                 selected_data = pd.concat([first_column, last_column], axis=1)
                 # Display the contents of the Excel file
-                st.write("customers cant suggested for personal loan/credit card/Termdeposit")
+                st.info("customers cant suggested for personal loan/credit card/Termdeposit")
 
                 st.dataframe(selected_data)
                 #endregion
