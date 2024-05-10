@@ -1,3 +1,4 @@
+#region headers
 import joblib
 import streamlit as st
 import pandas as pd
@@ -10,9 +11,14 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
+#endregion
+#region Global declarations
 modeln=''
+#endregion
 #region plotting graph based on trained model
-# developed and tested by Nikhil shravan khobragade
+# developed and tested by Nikhil shravan khobragade,
+
+#region Helper Functions for graphs
 def drawgraph(uploaded_file,model):
     #region preparing data
     data = pd.read_excel(uploaded_file, sheet_name=0)
@@ -112,7 +118,7 @@ def getmodel(uploaded_file):
     st.info('model trained with Accuracy: ' + str(maxaccuracy*100)+'% using '+modelname+' Algorithm')
     return  rmodel
 #endregion
-
+#endregion
 
 #region for  UI to get input file train model
 # developed and tested by pavan and kavya
