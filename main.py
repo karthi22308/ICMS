@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 # block for generating model to personal loan predictor
 # developed and tested by Nikhil shravan khobragade
 #region personal loan predictor
-data = pd.read_excel('personalloan.xlsx', sheet_name=0)
+data  = pd.read_excel('personalloan.xlsx', sheet_name=0)
 X = data.iloc[:, :-1]
 y = data.iloc[:, -1]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
